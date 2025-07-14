@@ -1,0 +1,155 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  description: An example API for demonstration purposes
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api/user
+security:
+  - BearerAuth: []
+components:
+  securitySchemes:
+    BearerAuth:     # Defining the security scheme for bearer token authentication
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  /v1/login:
+    post:
+      tags:
+        - Auth
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Invalid credentials
+
+  /v1/events:
+    post:
+      tags:
+        - Events
+      summary: Create new event
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                categoryId:
+                  type: string
+                publishTime:
+                  type: string
+                  format: date-time
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '201':
+          description: Event created
+    get:
+      tags:
+        - Events
+      summary: List published events (based on user's timezone)
+      parameters:
+        - in: query
+          name: timezone
+          schema:
+            type: string
+          required: false
+          description: User's IANA timezone (e.g., Asia/Kolkata)
+      responses:
+        '200':
+          description: List of events
+
+  /v1/events/{id}:
+    delete:
+      tags:
+        - Events
+      summary: Delete event (soft delete default)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [temp, perma]
+            default: temp
+      responses:
+        '200':
+          description: Event deleted
+
+  /v1/categories:
+    post:
+      tags:
+        - Categories
+      summary: Add a new (nested) category
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                parentId:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: Category created
+    get:
+      tags:
+        - Categories
+      summary: Get all categories in nested structure
+      responses:
+        '200':
+          description: Category list
+
+  /v1/admin/events:
+    get:
+      tags:
+        - Admin
+      summary: Admin view of all events with filter
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [published, unpublished, deleted]
+      responses:
+        '200':
+          description: All events with user/media info
+
