@@ -20,7 +20,7 @@ A backend application for managing events, users, categories, and admin workflow
 
 ### 1. Clone the Repository
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Shwtea/event-management-portal
 cd your-project-folder
 
 2. Install Dependencies
